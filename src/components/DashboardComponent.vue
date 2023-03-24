@@ -5,10 +5,14 @@
 </template>
 
 <script>
+import jsonData from '../data/data.json';
+
 export default {
   name: 'DashboardComponent',
-  props: {
-    //
+  data() {
+    return {
+      items: jsonData.Items
+    }
   }
 }
 </script>
