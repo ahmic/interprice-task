@@ -1,77 +1,59 @@
 <template>
     <div class="my-10">
-      <div class="flex flex-row items-center space-x-10">
-        <div class="border border-primary rounded-md divide-x divide-primary overflow-hidden">
-          <SwitchButton v-for="(currency, index) in currencies" :key="index" :label="currency" @clicked="selectedCurrency = currency" :active="selectedCurrency == currency" />
-        </div>
 
-        <div class="border border-primary rounded-md overflow-hidden">
-          <SwitchButton v-for="(year, index) in currencyYears" :key="index" :label="year" label-suffix="YRS" @clicked="toggleYears" :active="selectedYears.indexOf(year) >= 0" :class="['border-r last:border-0', selectedYears.indexOf(year) >= 0 ? 'border-white' : 'border-primary']" />
-        </div>
+      <FilterComponent />
 
-        <div class="border border-primary rounded-md divide-x divide-primary overflow-hidden">
-          <SwitchButton label="Spread" @clicked="displaySwitcher = 'Spread'" :active="displaySwitcher == 'Spread'" />
-          <SwitchButton label="Yield" @clicked="displaySwitcher = 'Yield'" :active="displaySwitcher == 'Yield'" />
-          <SwitchButton label="3ML Spread" @clicked="displaySwitcher = '3ML Spread'" :active="displaySwitcher == '3ML Spread'" />
-        </div>
+      <div class="mt-6">
+        <input type="text" placeholder="Filter by company name ..." class="min-w-[250px] border border-gray-300 rounded text-sm py-1.5 px-2">
+      </div>
 
+      <div class="mt-6">
+        <TableComponent />
       </div>
     </div>
 </template>
 
 <script>
 import jsonData from '../data/data.json';
-import SwitchButton from './misc/SwitchButton.vue';
+import TableComponent from './misc/TableComponent.vue';
+import { mapActions, mapGetters } from 'vuex';
+import { getAvailableCurrencies } from '@/lib/helpers';
+import FilterComponent from './misc/FilterComponent.vue';
 
 export default {
   name: 'DashboardComponent',
   data() {
     return {
-      items: jsonData.Items,
-      selectedCurrency: null,
-      displaySwitcher: 'Spread',
-      selectedYears: [],
+      //
     }
+  },
+  created() {
+    this.setupStore();
   },
   computed: {
-    currencies() {
-      return this.items.map(item => {
-        return item['Quote']?.map(quote => quote['Currency']);
-      })
-      .flat()
-      .filter(c => typeof c !== 'undefined')
-      .filter((item, i, ar) => ar.indexOf(item) === i);
-    },
-    currencyYears() {
-      return this.items.map(item => {
-        return item['Quote']?.filter(quote => quote['Currency'] == this.selectedCurrency);
-      })
-      .flat()
-      .filter(c => typeof c !== 'undefined')
-      .map(item => item.Years)
-      .filter((item, i, ar) => ar.indexOf(item) === i)
-      .sort((a, b) => parseInt(a) > parseInt(b));
-    },
-  },
-  mounted() {
-    this.selectedCurrency = this.currencies[0];
-  },
-  watch: {
-    selectedCurrency() {
-      this.selectedYears = [...this.currencyYears]
-    }
+    ...mapGetters([
+      'items',
+      'currencies',
+      'displaySwitcherValues',
+    ]),
   },
   methods: {
-    toggleYears(value) {
-      if (this.selectedYears.indexOf(value) >= 0) {
-        this.selectedYears.splice(this.selectedYears.indexOf(value), 1);
-      } else {
-        this.selectedYears.push(value);
-      }
-    }
+    ...mapActions([
+      'setItems',
+      'setCurrencies',
+      'setSelectedCurrency',
+      'setSelectedDisplaySwitcher',
+    ]),
+    setupStore() {
+      this.setItems(jsonData.Items);
+      this.setCurrencies(getAvailableCurrencies(jsonData.Items));
+      this.setSelectedCurrency(this.currencies[0]);
+      this.setSelectedDisplaySwitcher(this.displaySwitcherValues[0]);
+    },
   },
   components: {
-    SwitchButton,
+    TableComponent,
+    FilterComponent,
   }
 }
 </script>

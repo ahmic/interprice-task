@@ -3,3 +3,10 @@
 @tailwind components;
 
 @tailwind utilities;
+
+table th {
+  @apply font-normal text-gray-400 text-sm;
+}
+table td {
+  @apply py-1;
+}
