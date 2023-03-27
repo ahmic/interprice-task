@@ -8,14 +8,20 @@ export const getAvailableCurrencies = items => {
 }
 
 export const getCurrencyYears = (items, selectedCurrency) => {
-  return items?.map(item => {
-      return item['Quote']?.filter(quote => quote['Currency'] == selectedCurrency);
-    })
-    .flat()
-    .filter(c => typeof c !== 'undefined')
-    .map(item => item.Years)
-    .filter((item, i, ar) => ar.indexOf(item) === i)
-    .sort((a, b) => parseInt(a) > parseInt(b));
+  const currencies = [];
+  items?.forEach(item => {
+      item.Quote?.forEach(quote => {
+
+        if (quote.Currency == selectedCurrency && currencies.indexOf(quote.Years) < 0) {
+          currencies.push(quote.Years);
+        }
+      });
+    });
+
+  console.log(currencies);
+
+
+  return currencies;
 }
 
 export const dateFormatter = input => {
@@ -26,4 +32,14 @@ export const dateFormatter = input => {
     const month = date.toLocaleString('en-us',{month:'short'});
     return `${date.getDate()}-${month}-${date.getFullYear().toString().substr(-2)}`;
   }
+}
+
+export const filterItems = (items, currency, years) => {
+  const itemsCopy = JSON.parse(JSON.stringify(items));
+  const filtered = itemsCopy.map(company => {
+    company.Quote = company.Quote?.filter(quote => quote.Currency == currency && years.indexOf(quote.Years) >= 0);
+    return company;
+  });
+
+  return filtered;
 }
