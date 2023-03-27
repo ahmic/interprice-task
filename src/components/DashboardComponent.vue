@@ -4,10 +4,6 @@
       <FilterComponent />
 
       <div class="mt-6">
-        <input type="text" placeholder="Filter by company name ..." class="min-w-[250px] border border-gray-300 rounded text-sm py-1.5 px-2">
-      </div>
-
-      <div class="mt-6">
         <TableComponent />
       </div>
     </div>

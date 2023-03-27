@@ -1,5 +1,9 @@
 <template>
   <div class="max-w-5xl">
+    <div class="mt-6">
+      <input type="text" placeholder="Filter by company name ..." class="min-w-[250px] border border-gray-300 rounded text-sm py-1.5 px-2" v-model="companySearch">
+    </div>
+
     <div class="flex flex-row items-center justify-end">
       <div v-for="(year, index) in selectedYears" :key="index" class="w-40 text-center text-xs font-bold px-2 leading-loose">
         <div class="w-full border-b border-gray-300">{{ year }} YRS</div>
@@ -68,6 +72,7 @@ import CaretIcon from '../icons/CaretIcon.vue';
 export default {
   data() {
     return {
+      companySearch: '',
       sort: [
         {parameter: 'date', direction: 'desc'},
         {parameter: 'preffered', direction: 'desc'},
@@ -91,6 +96,12 @@ export default {
       this.sort.forEach(option => {
         filtered = applySorting(filtered, option.parameter, option.direction);
       })
+
+      if (this.companySearch.length >= 2) {
+        filtered = filtered.filter(c => {
+          return c.Company.toLowerCase().search(this.companySearch) > -1;
+        });
+      }
 
       return filtered;
     },
