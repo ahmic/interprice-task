@@ -18,9 +18,6 @@ export const getCurrencyYears = (items, selectedCurrency) => {
       });
     });
 
-  console.log(currencies);
-
-
   return currencies;
 }
 
@@ -42,4 +39,42 @@ export const filterItems = (items, currency, years) => {
   });
 
   return filtered;
+}
+
+export const getMinValuesPerYear = (items, years, selectedDisplaySwitcher) => {
+  const itemsCopy = JSON.parse(JSON.stringify(items));
+  const quotes = itemsCopy.map(i => i.Quote).flat();
+  const minValues = [];
+
+  years.forEach(year => {
+    const minForYear = quotes.filter(q => q?.Years == year && q?.CouponType == 'FIX')
+      .map(q => q[selectedDisplaySwitcher])
+      .filter(v => v != null);
+
+      minValues[year] = Math.min(...minForYear);
+  });
+
+  return minValues;
+}
+
+export const getAvgValuesPerYear = (items, years, selectedDisplaySwitcher) => {
+  const itemsCopy = JSON.parse(JSON.stringify(items));
+  const quotes = itemsCopy.map(i => i.Quote).flat();
+  const avgValues = [];
+
+  years.forEach(year => {
+    const valuesFix = quotes.filter(q => q?.Years == year && q?.CouponType == 'FIX')
+      .map(q => q[selectedDisplaySwitcher])
+      .filter(v => v != null);
+
+    avgValues.push({year: year, type: 'FIX', value: valuesFix.reduce((a, b) => a + b, 0) / valuesFix.length || null});
+
+    const valuesFrn = quotes.filter(q => q?.Years == year && q?.CouponType == 'FRN')
+      .map(q => q[selectedDisplaySwitcher])
+      .filter(v => v != null);
+
+    avgValues.push({year: year, type: 'FRN', value: valuesFrn.reduce((a, b) => a + b, 0) / valuesFrn.length || null});
+  });
+
+  return avgValues;
 }

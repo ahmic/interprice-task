@@ -1,5 +1,6 @@
 <template>
   <div style="display: contents" class="text-sm">
+
     <tr class="border-b border-gray-300">
       <td class="align-middle select-none">
         <div @click="isColapsed = !isColapsed" v-show="rowData.Quote != null && rowData.Quote.length > 0">
@@ -9,11 +10,11 @@
       <td>{{ formatDate(rowData.DateSent) }}</td>
       <td :class="['font-bold', rowData.Quote == null || rowData.Quote.length == 0 ? 'text-gray-400' : '']">{{ rowData.Company }}</td>
       <template v-for="(year, index) in selectedYears">
-        <td :key="`fix-${index}`" class="w-20 text-center">
-          {{ getCellValue('FIX', year, selectedDisplaySwitcher) }}
+        <td :key="`fix-${index}`" :class="['w-20 text-center', isHighlited(year, getCellValue('FIX', year, selectedDisplaySwitcher)) ? 'bg-yellow-100' : '']">
+          {{ getCellValue('FIX', year, selectedDisplaySwitcher) | formatValue(selectedDisplaySwitcher) }}
         </td>
         <td :key="`frn-${index}`" class="w-20 text-center">
-          {{ getCellValue('FRN', year, selectedDisplaySwitcher) }}
+          {{ getCellValue('FRN', year, selectedDisplaySwitcher) | formatValue(selectedDisplaySwitcher) }}
         </td>
       </template>
     </tr>
@@ -24,10 +25,10 @@
       <td>{{ switcherValue }}</td>
       <template v-for="(year, index) in selectedYears">
         <td :key="`fix-${index}`" class="w-20 text-center">
-          {{ getCellValue('FIX', year, switcherValue) }}
+          {{ getCellValue('FIX', year, switcherValue) | formatValue(switcherValue) }}
         </td>
         <td :key="`frn-${index}`" class="w-20 text-center">
-          {{ getCellValue('FRN', year, switcherValue) }}
+          {{ getCellValue('FRN', year, switcherValue) | formatValue(switcherValue) }}
         </td>
       </template>
     </tr>
@@ -45,6 +46,12 @@ export default {
     rowData: {
       type: Object,
       required: true,
+    },
+    minValuesPerYear: {
+      type: Array,
+      default: () => {
+        return [];
+      }
     }
   },
   data() {
@@ -65,14 +72,22 @@ export default {
     getCellValue(type, year, displayValue) {
       const val = this.rowData.Quote?.find(item => item.Years == year && item.CouponType == type && item.Currency == this.selectedCurrency)?.[displayValue];
 
-      if (typeof val == 'undefined' || val == null) {
+      return val;
+    },
+    isHighlited(year, value) {
+      return this.minValuesPerYear[year] == value;
+    }
+  },
+  filters: {
+    formatValue(value, type) {
+      if (typeof value == 'undefined' || value == null) {
         return '';
       }
 
-      if (displayValue == 'Yield') {
-        return `${parseFloat(val).toFixed(3)}%`;
+      if (type == 'Yield') {
+        return `${parseFloat(value).toFixed(3)}%`;
       } else {
-        return `${val > 0 ? '+' : ''}${val}bp`;
+        return `${value > 0 ? '+' : ''}${value}bp`;
       }
     }
   },

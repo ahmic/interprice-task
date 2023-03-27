@@ -38,7 +38,21 @@
       </thead>
 
       <tbody>
-        <TableRow v-for="companyItem in filteredItems" :key="companyItem.Company" :row-data="companyItem" />
+        <TableRow v-for="companyItem in filteredItems" :key="companyItem.Company" :row-data="companyItem" :min-values-per-year="minValuesPerYear" />
+
+        <tr class="border border-gray-300">
+          <td></td>
+          <td></td>
+          <td class="text-sm">Average by {{ selectedDisplaySwitcher }}</td>
+          <template v-for="(year, index) in selectedYears">
+            <td :key="`fix-${index}`" class="w-20 text-center text-sm">
+              {{ avgValuesPerYear.find(v => v.year == year && v.type == 'FIX')?.value | formatValue(selectedDisplaySwitcher) }}
+            </td>
+            <td :key="`frn-${index}`" class="w-20 text-center text-sm">
+              {{ avgValuesPerYear.find(v => v.year == year && v.type == 'FRN')?.value | formatValue(selectedDisplaySwitcher) }}
+            </td>
+          </template>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -47,7 +61,7 @@
 <script>
 import TableRow from './TableRow.vue'
 import { mapGetters } from 'vuex';
-import { filterItems } from '../../lib/helpers';
+import { filterItems, getMinValuesPerYear, getAvgValuesPerYear } from '../../lib/helpers';
 import { applySorting } from '../../lib/sort';
 import CaretIcon from '../icons/CaretIcon.vue';
 
@@ -60,6 +74,9 @@ export default {
       ]
     }
   },
+  mounted() {
+    //
+  },
   computed: {
     ...mapGetters([
       'items',
@@ -67,6 +84,7 @@ export default {
       'selectedYears',
       'currencyYears',
       'selectedCurrency',
+      'selectedDisplaySwitcher',
     ]),
     filteredItems() {
       let filtered = filterItems(this.items, this.selectedCurrency, this.selectedYears);
@@ -75,6 +93,12 @@ export default {
       })
 
       return filtered;
+    },
+    minValuesPerYear() {
+      return getMinValuesPerYear(this.filteredItems, this.selectedYears, this.selectedDisplaySwitcher);
+    },
+    avgValuesPerYear() {
+      return getAvgValuesPerYear(this.filteredItems, this.selectedYears, this.selectedDisplaySwitcher);
     }
   },
   methods: {
@@ -85,6 +109,19 @@ export default {
         this.sort = [{parameter: sortParemeter, direction: direction == 'asc' ? 'desc' : 'asc'}];
       } else {
         this.sort = [{parameter: sortParemeter, direction: 'asc'}];
+      }
+    }
+  },
+  filters: {
+    formatValue(value, type) {
+      if (typeof value == 'undefined' || value == null) {
+        return '';
+      }
+
+      if (type == 'Yield') {
+        return `${parseFloat(value).toFixed(3)}%`;
+      } else {
+        return `${value > 0 ? '+' : ''}${value.toFixed(2).replace(/[.,]00$/, "")}bp`;
       }
     }
   },
