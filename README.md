@@ -1,5 +1,8 @@
 # interprice-data-dashboard
 
+## Demo
+https://dapper-sawine-9f30bb.netlify.app/
+
 ## Project setup
 ```
 npm install
